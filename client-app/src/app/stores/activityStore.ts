@@ -3,6 +3,7 @@ import { Activity } from "../models/activity";
 import agent from "../api/agent";
 import {v4 as uuid} from 'uuid';
 
+// implement MobX Store to manage states through observables
 export default class ActivityStore {
     activityRegistry = new Map<string, Activity>();
     selectedActivity: Activity | undefined = undefined;
@@ -21,11 +22,11 @@ export default class ActivityStore {
 
     // use arrow function to bind the action to this class to use "this"
     loadActivities = async () => {
+        this.setLoadingInitial(true);
         try{
             const activities = await agent.Activities.list();
             activities.forEach(activity => {
-                activity.date = activity.date.split('T')[0];
-                this.activityRegistry.set(activity.id, activity);
+                this.setActivity(activity);
             })
             this.setLoadingInitial(false);
         } catch (error) {
@@ -34,25 +35,40 @@ export default class ActivityStore {
         }
     }
 
+    // get activity from API if it is not in registry
+    loadActivity = async (id: string) => {
+        let activity = this.getActivity(id);
+        if (activity) {
+            this.selectedActivity = activity;
+            return activity;
+        }
+        else {
+            this.setLoadingInitial(true);
+            try {
+                activity = await agent.Activities.details(id);
+                this.setActivity(activity);
+                runInAction(() => this.selectedActivity = activity);
+                this.setLoadingInitial(false);
+                return activity;
+            } catch (error) {
+                console.log(error);
+                this.setLoadingInitial(false);
+            }
+        }
+    }
+
+    // add one activity to the map in this component, activtyRegistry
+    private setActivity = (activity: Activity) => {
+        activity.date = activity.date.split('T')[0];
+        this.activityRegistry.set(activity.id, activity);
+    }
+
+    private getActivity = (id: string) => {
+        return this.activityRegistry.get(id);
+    }
+
     setLoadingInitial = (state: boolean) => {
         this.loadingInitial = state;
-    }
-
-    selectActivity = (id: string) => {
-        this.selectedActivity = this.activityRegistry.get(id);
-    }
-
-    cancelSelectedActivity = () => {
-        this.selectedActivity = undefined;
-    }
-
-    openForm = (id?: string) => {
-        id ? this.selectActivity(id) : this.cancelSelectedActivity();
-        this.editMode = true;
-    }
-
-    closeForm = () => {
-        this.editMode = false;
     }
 
     // add new activity to database
@@ -102,9 +118,6 @@ export default class ActivityStore {
             await agent.Activities.delete(id);
             runInAction(() => {
                 this.activityRegistry.delete(id);
-                if (this.selectedActivity?.id === id){
-                    this.cancelSelectedActivity();
-                }
                 this.loading = false;
             })
         } catch (error) {
