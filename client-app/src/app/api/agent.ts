@@ -20,11 +20,14 @@ axios.interceptors.response.use(async response => {
     const {data, status, config} = error.response as AxiosResponse;
     switch (status) {
         case 400:
-            // if error is about guid, direct to not found page
-            if (config.method === "get" && data.errors.hasOwnProperty('id')) {
+            if (!data.errors) {
+                toast.error(data);
+            } else if (config.method === "get" && data.errors.hasOwnProperty('id')) {
+                // if error is about guid, direct to not found
                 router.navigate('/not-found');
             }
-            if (data.errors) {
+            else {
+                // putting each of the validation error into an array
                 const modelStateErrors = [];
                 for (const key in data.errors) {
                     if (data.errors[key]) {
@@ -32,8 +35,6 @@ axios.interceptors.response.use(async response => {
                     }
                 }
                 throw modelStateErrors.flat();
-            } else {
-                toast.error(data);
             }
             break;
         case 401:
