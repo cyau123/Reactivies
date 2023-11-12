@@ -2,6 +2,7 @@ import { makeAutoObservable, runInAction } from "mobx";
 import { Activity } from "../models/activity";
 import agent from "../api/agent";
 import {v4 as uuid} from 'uuid';
+import {format} from 'date-fns'
 
 // implement MobX Store to manage states through observables
 export default class ActivityStore {
@@ -9,7 +10,7 @@ export default class ActivityStore {
     selectedActivity: Activity | undefined = undefined;
     editMode = false;
     loading = false;
-    loadingInitial = true;
+    loadingInitial = false;
 
     constructor() {
         makeAutoObservable(this)
@@ -17,7 +18,7 @@ export default class ActivityStore {
 
     get activitiesByDate() {
         return Array.from(this.activityRegistry.values()).sort((a, b) =>
-            Date.parse(a.date) - Date.parse(b.date));
+           a.date!.getTime() - b.date!.getTime());
     }
 
     // return an object where the key is activity's date and value is a group of activities of the same date
@@ -25,7 +26,7 @@ export default class ActivityStore {
         return Object.entries(
             this.activitiesByDate.reduce((activities, activity) => {
                 // date is a string, which is a key
-                const date = activity.date;
+                const date = format(activity.date!, 'dd MMM yyyy');
                 activities[date] = activities[date] ? [...activities[date], activity] : [activity];
                 return activities;
             }, {} as {[key: string]: Activity[]})
@@ -71,7 +72,7 @@ export default class ActivityStore {
 
     // add one activity to the map in this component, activtyRegistry
     private setActivity = (activity: Activity) => {
-        activity.date = activity.date.split('T')[0];
+        activity.date = new Date(activity.date!);
         this.activityRegistry.set(activity.id, activity);
     }
 
