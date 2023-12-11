@@ -11,7 +11,7 @@ export default observer(function ActivityDashboard() {
     const {activityStore} = useStore();
     const {loadActivities, activityRegistry} = activityStore;
 
-    // only use api to load activities list whem the local activity map is empty
+    // only use api to load activities list when the local activity map is empty
     useEffect(() => {
         if (activityRegistry.size <= 1) loadActivities();
     }, [loadActivities, activityRegistry.size])

@@ -14,7 +14,7 @@ export default observer(function HomePage() {
                     <Image size='massive' src="/assets/logo.png" alt="logo" style={{marginBottom: 12}} />
                     Reactivities
                 </Header>
-                {/* show login button if not logged in or show go to activities button if logged in*/}
+                {/* show go to activities button if logged in, or show login button if not*/}
                 {userStore.isLoggedIn ? (
                     <>
                         <Header as='h2' inverted content='Welcome to Reactivities' />

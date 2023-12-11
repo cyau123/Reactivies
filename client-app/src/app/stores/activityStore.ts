@@ -1,7 +1,6 @@
 import { makeAutoObservable, runInAction } from "mobx";
 import { Activity, ActivityFormValues } from "../models/activity";
 import agent from "../api/agent";
-import {v4 as uuid} from 'uuid';
 import {format} from 'date-fns'
 import { store } from "./store";
 import { Profile } from "../models/profile";
@@ -11,8 +10,8 @@ export default class ActivityStore {
     activityRegistry = new Map<string, Activity>();
     selectedActivity: Activity | undefined = undefined;
     editMode = false;
-    loading = false;
-    loadingInitial = false;
+    loading = false; // for loading buttons
+    loadingInitial = false; // for Loading Activities
 
     constructor() {
         makeAutoObservable(this)
@@ -25,6 +24,7 @@ export default class ActivityStore {
 
     // return an object where the key is activity's date and value is a group of activities of the same date
     get groupedActivities() {
+        // change from object to arrays of [key, value] pairs
         return Object.entries(
             this.activitiesByDate.reduce((activities, activity) => {
                 // date is a string, which is a key
@@ -35,7 +35,8 @@ export default class ActivityStore {
         )
     }
 
-    // use arrow function to bind the action to this class to use "this"
+    /* Load all activities from API and add each activity to activities
+        Use arrow function to bind the action to this class to use "this" */
     loadActivities = async () => {
         this.setLoadingInitial(true);
         try{
@@ -50,17 +51,19 @@ export default class ActivityStore {
         }
     }
 
-    // get activity from API if it is not in registry
+    // Set selectedActivity to activity and return activity
     loadActivity = async (id: string) => {
         let activity = this.getActivity(id);
         if (activity) {
             this.selectedActivity = activity;
             return activity;
         }
+        // get activity from API if it is not in registry
         else {
             this.setLoadingInitial(true);
             try {
                 activity = await agent.Activities.details(id);
+                // add activity to registry
                 this.setActivity(activity);
                 runInAction(() => this.selectedActivity = activity);
                 this.setLoadingInitial(false);
@@ -72,7 +75,7 @@ export default class ActivityStore {
         }
     }
 
-    // add one activity to the map in this component, activtyRegistry
+    // Add one activity to activtyRegistry, and set up isGoing, isHost, and host
     private setActivity = (activity: Activity) => {
         const user = store.userStore.user;
         if (user) {
@@ -95,7 +98,7 @@ export default class ActivityStore {
         this.loadingInitial = state;
     }
 
-    // add new activity to database
+    // add new activity to database, and set selectedActivity to the new activity
     createActivity = async (activity: ActivityFormValues) => {
         const user = store.userStore.user;
         const attendee = new Profile(user!);
@@ -147,6 +150,7 @@ export default class ActivityStore {
         }
     }
 
+    // Update the attendee list of an activity - not attending/ attending/ cancel activity
     updateAttendance = async () => {
         const user = store.userStore.user;
         this.loading = true;

@@ -37,12 +37,15 @@ export default observer(function ActivityForm(){
 
     })
 
-    // when component loads, check if id is in parameter
+    /* when component loads, check if id is in parameter,
+       if yes, this is manageActivity and get it from registry,
+       set initial values to existing activity's values */
     useEffect(() => {
         if (id) loadActivity(id).then(activity => setActivity(new ActivityFormValues(activity)));
     }, [id, loadActivity]);
 
-
+    /* when user clicks Submit, either create or update activity,
+        then redirects to the corresponding ActivityDetails page */
     function handleFormSubmit(activity: ActivityFormValues) {
         if (!activity.id) {
             let newActivity = {
@@ -61,6 +64,7 @@ export default observer(function ActivityForm(){
         // clearing is to clear previous float
         <Segment clearing>
             <Header content="Activity Details" sub color='teal' />
+            {/* enableReinitialize will reset the form if initialValues change*/}
             <Formik
                 validationSchema={validationSchema}
                 enableReinitialize

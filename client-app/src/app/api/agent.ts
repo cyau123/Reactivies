@@ -5,6 +5,7 @@ import { router } from '../router/Routes';
 import { store } from '../stores/store';
 import { User, UserFormValues } from '../models/user';
 
+// Simulate network latency
 const sleep = (delay: number) => {
     return new Promise((resolve) => {
         setTimeout(resolve, delay)
@@ -13,14 +14,15 @@ const sleep = (delay: number) => {
 
 axios.defaults.baseURL = 'http://localhost:5000/api';
 
-// send up the token with the request
+// Send up the token with the request
 axios.interceptors.request.use(config => {
     const token = store.commonStore.token;
     if (token && config.headers) config.headers.Authorization = `Bearer ${token}`;
     return config;
 })
 
-// anything other than 200 status will be considered a rejected request
+/* Handling response and errors, anything other than 200 status
+    will be considered a rejected request */
 axios.interceptors.response.use(async response => {
     await sleep(1000);
     return response;
@@ -73,6 +75,7 @@ const requests = {
     del: <T> (url: string) => axios.delete<T>(url).then(responseBody),
 }
 
+//agent methods for activities
 const Activities = {
     list: () => requests.get<Activity[]>('/activities'),
     details: (id: string) => requests.get<Activity>(`/activities/${id}`),

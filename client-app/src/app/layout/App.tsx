@@ -25,16 +25,17 @@ function App() {
   }, [commonStore, userStore])
 
   if (!commonStore.appLoaded) return <LoadingComponent content='Loading app...' />
-  
+
   return (
-  // return homepage comonent if pathname is / , otherwise, return other components
     <>
     <ModalContainer />
     <ToastContainer position='bottom-right' hideProgressBar theme='colored' />
+      {/* return homepage component if pathname is / , otherwise, return other components */}
       {location.pathname === '/' ? <HomePage /> : (
         <>
           <NavBar />
           <Container style={{marginTop: '7em'}}>
+            {/* outlet renders child routes*/}
             <Outlet />
           </Container>
         </>

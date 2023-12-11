@@ -40,6 +40,8 @@ export default class UserStore {
         router.navigate('/');
     }
 
+    /* if user not logged out (has token in storage) and enters the application again,
+       it will get the user from api */
     getUser = async() => {
         try {
             const user = await agent.Account.current();

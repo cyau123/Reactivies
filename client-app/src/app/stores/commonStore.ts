@@ -10,11 +10,12 @@ export default class CommonStore {
     constructor() {
         makeAutoObservable(this);
         reaction(
-            () => this.token,
-            token => {
+            () => this.token, // data function, when this.token is changed, effect function will be triggered
+            token => { // effect function
                 if (token) {
                     localStorage.setItem('jwt', token)
                 } else {
+                    // logout and remove token from storage
                     localStorage.removeItem('jwt')
                 }
             }
