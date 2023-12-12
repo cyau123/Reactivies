@@ -11,6 +11,7 @@ namespace API.Controllers
     {
         private IMediator _mediator;
 
+        // getter for _mediator (any classes inherit this class can also use this because this is "protected")
         protected IMediator Mediator => _mediator ??= HttpContext.RequestServices.GetService<IMediator>();
 
         protected ActionResult HandleResult<T>(Result<T> result)

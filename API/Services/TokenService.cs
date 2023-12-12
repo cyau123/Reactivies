@@ -23,7 +23,9 @@ namespace API.Services
                 new Claim(ClaimTypes.Email, user.Email),
             };
 
+            // create a symmetric security key using the TokenKey from the config
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["TokenKey"]));
+            // create a signing credential using an algorithm
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
 
             var tokenDescriptor = new SecurityTokenDescriptor
@@ -37,6 +39,7 @@ namespace API.Services
 
             var token = tokenHandler.CreateToken(tokenDescriptor);
 
+            // return as a string
             return tokenHandler.WriteToken(token);
         }
     }

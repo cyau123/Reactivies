@@ -8,7 +8,6 @@ namespace Infrastructure.Security
 {
     public class IsHostRequirement : IAuthorizationRequirement
     {
-        
     }
 
     public class IsHostRequirementHandler : AuthorizationHandler<IsHostRequirement>
@@ -23,13 +22,16 @@ namespace Infrastructure.Security
 
         protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, IsHostRequirement requirement)
         {
+            // get userId from claims
             var userId = context.User.FindFirstValue(ClaimTypes.NameIdentifier);
 
             if (userId == null) return Task.CompletedTask;
 
+            // get activityId from http request
             var activityId = Guid.Parse(_httpContextAccessor.HttpContext?.Request.RouteValues
                 .SingleOrDefault(x => x.Key == "id").Value?.ToString());
 
+            // check if the user is attending the activity in the join table
             var attendee = _dbContext.ActivityAttendees
                 .AsNoTracking()
                 .SingleOrDefaultAsync(x => x.AppUserId == userId && x.ActivityId == activityId)
@@ -37,6 +39,7 @@ namespace Infrastructure.Security
 
             if (attendee == null) return Task.CompletedTask;
 
+            // if the user is attending and also a Host, mark the requirement as succeed
             if (attendee.IsHost) context.Succeed(requirement);
 
             return Task.CompletedTask;

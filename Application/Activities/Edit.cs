@@ -37,8 +37,7 @@ namespace Application.Activities
 
                 if (activity == null) return null;
 
-                //activity.Title = request.Activity.Title ?? activity.Title;
-
+                // update the found activity with the new values in request.Activity
                 _mapper.Map(request.Activity, activity);
 
                 var result = await _context.SaveChangesAsync() > 0;

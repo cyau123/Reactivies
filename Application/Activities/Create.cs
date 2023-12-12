@@ -30,7 +30,7 @@ namespace Application.Activities
             private readonly IUserAccessor _userAccessor;
             public Handler(DataContext context, IUserAccessor userAccessor)
             {
-            _userAccessor = userAccessor;
+                _userAccessor = userAccessor;
                 _context = context;
             }
 

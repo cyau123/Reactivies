@@ -21,6 +21,7 @@ namespace API.MiddleWare
         public async Task InvokeAsync(HttpContext context)
         {
             try{
+                // call the next middleware in the pipeline
                 await _next(context);
             }
             catch (Exception ex)
@@ -29,14 +30,18 @@ namespace API.MiddleWare
                 context.Response.ContentType = "application/json";
                 context.Response.StatusCode = (int) HttpStatusCode.InternalServerError;
 
+                /* Create an AppException object to encapsulate the error details.
+                 If is in development, include the message and stackTrace, otherwise just display
+                 Internal Server Error */
                 var response = _env.IsDevelopment() ? new AppException(context.Response.StatusCode,
                                                                             ex.Message,ex.StackTrace?.ToString())
-                                                    : new AppException(context.Response.StatusCode, "Internal Serval Error");
+                                                    : new AppException(context.Response.StatusCode, "Internal Server Error");
 
                 var options = new JsonSerializerOptions{PropertyNamingPolicy = JsonNamingPolicy.CamelCase};
 
                 var json = JsonSerializer.Serialize(response, options);
 
+                // Write the JSON response to the HTTP response stream
                 await context.Response.WriteAsync(json);
             }
         }

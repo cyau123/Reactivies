@@ -30,11 +30,13 @@ namespace API.Controllers
 
             if (user == null) return Unauthorized();
 
-            // check password of user
+            // check if the entered is the correct password
             var result = await _userManager.CheckPasswordAsync(user, loginDto.Password);
 
+            // if password is correct
             if (result)
             {
+                // create UserDto for user
                 return CreateUserObject(user);
             }
 
@@ -57,6 +59,7 @@ namespace API.Controllers
                 return ValidationProblem(ModelState);
             }
 
+            // create a new AppUser object
             var user = new AppUser
             {
                 DisplayName = registerDto.DisplayName,
@@ -64,8 +67,10 @@ namespace API.Controllers
                 UserName = registerDto.UserName
             };
 
+            // Add this new user to the Database using UserManager
             var result = await _userManager.CreateAsync(user, registerDto.Password);
 
+            // If user added to database, create and return a UserDto for the user
             if (result.Succeeded)
             {
                 return CreateUserObject(user);
@@ -83,6 +88,7 @@ namespace API.Controllers
             return CreateUserObject(user);
         }
 
+        // Change an AppUser object to UserDto, which includes a new token from tokenService
         private UserDto CreateUserObject(AppUser user)
         {
             return new UserDto
